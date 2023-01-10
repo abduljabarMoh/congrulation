@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//========================================================================================================>>Role Users
+
+enum Roles {
+  Admin
+  supperadmin
+  user
+}
+
+//========================================================================================================>>Role payment
+
+enum mon {
+  ispaid
+  notpaid
+}
+
+//========================================================================================================>>userTable
+
+model Users {
+  UserID      Int           @id @default(autoincrement())
+  Firstname   String
+  lastname    String
+  u_email     String        @unique
+  u_password  String
+  u_phone     String        @unique
+  u_addres    String
+  joidat      DateTime      @default(now())
+  Role        Roles         @default(user)
+  //re
+  oder        Oreds[]
+  cat         Category[]
+  pro         products[]
+  reaviwes    Reviews[]
+  cart        cart[]
+  Subcategory SubCategory[]
+}
+
+//========================================================================================================>>OredsTable
+
+model Oreds {
+  Ored_id       Int    @id @default(autoincrement())
+  Item_price    Int
+  Item_name     String @unique
+  Item_quantity Int
+  total_price   Int
+  address       String
+  phone_number  Int    @default(0634806536)
+  produts       Json[]
+  Role          mon    @default(notpaid)
+
+  //Realtion
+  userId  Int
+  Cart_ID Int
+  cart    cart  @relation(fields: [Cart_ID], references: [Cart_ID])
+  users   Users @relation(fields: [userId], references: [UserID])
+}
+
+//========================================================================================================>>CategoryTable
+
+model Category {
+  cat_ID Int           @id @default(autoincrement())
+  type   String        @unique
+  //re
+  UserID Int
+  user   Users         @relation(fields: [UserID], references: [UserID])
+  sub    SubCategory[]
+}
+
+//========================================================================================================>>CategoryTable
+
+model SubCategory {
+  SubID      Int        @id @default(autoincrement())
+  Sub_name   String     @unique
+  imase      String
+  CategoryID Int
+  category   Category   @relation(fields: [CategoryID], references: [cat_ID])
+  //re
+  UserID     Int
+  users      Users      @relation(fields: [UserID], references: [UserID])
+  pro        products[]
+}
+
+//========================================================================================================>>ProductTable
+
+model products {
+  Pro_id     Int         @id @default(autoincrement())
+  Pro_name   String      @unique
+  Pro_price  Int
+  Pro_desc   String
+  Pro_images String
+  Pro_disc   Int
+  Pro_qtity  Int
+  //re 
+  UserID     Int
+  SubID      Int
+  user       Users       @relation(fields: [UserID], references: [UserID])
+  SubCate    SubCategory @relation(fields: [SubID], references: [SubID])
+  reviwe     Reviews[]
+  cart       cart[]
+}
+
+//========================================================================================================>>ReviewsTable
+model Reviews {
+  Rev_id   Int      @id @default(autoincrement())
+  rating   Int
+  body     String?
+  UserID   Int      @unique
+  pro_id   Int
+  createat DateTime @default(now())
+  //re
+  user     Users    @relation(fields: [UserID], references: [UserID])
+  product  products @relation(fields: [pro_id], references: [Pro_id])
+}
+
+//========================================================================================================>>CartTable
+model cart {
+  Cart_ID  Int      @id @default(autoincrement())
+  Quantity Int      @default(0)
+  UserId   Int
+  Pro_id   Int
+  //re
+  pro      products @relation(fields: [Pro_id], references: [Pro_id])
+  user     Users    @relation(fields: [UserId], references: [UserID])
+  order    Oreds[]
+}
